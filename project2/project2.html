@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Switch Shaders</title>
+    <style>
+        canvas{
+            float: left;
+        }
+        div{
+            padding-left: 20px;;
+            float: left;
+        }
+    </style>
+</head>
+
+<body onload="main()">
+<canvas id="webgl" width="500" height="500">
+    Please use a browser that supports "canvas"
+</canvas>
+<div>
+<p>Speed for Cube 2</p>
+0<input id="cube2" type="range" max="1000" min="0" value="70">1000
+<p for="cube3">Speed for Cube 3</p>
+0<input id="cube3" type="range" max="1000" min="0" value="70">1000
+
+</div>
+<script src="../lib/webgl-utils.js"></script>
+<script src="../lib/webgl-debug.js"></script>
+<script src="../lib/cuon-utils.js"></script>
+<script src="../lib/cuon-matrix.js"></script>
+<script src="project2.js"></script>
+</body>
+</html>
