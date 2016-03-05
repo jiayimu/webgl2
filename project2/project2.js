@@ -209,6 +209,9 @@ function initTextures(gl, program,cubeNumber) {
     return texture;
 }
 
+var sliderBar2 = document.getElementById("cube2");
+var sliderBar3 = document.getElementById("cube3");
+
 function drawTexCube(gl, program, o, texture, x, angle, viewProjMatrix,cubeNumber) {
     gl.useProgram(program);   // Tell that this program object is used
 
@@ -225,9 +228,11 @@ function drawTexCube(gl, program, o, texture, x, angle, viewProjMatrix,cubeNumbe
 
     if(cubeNumber == 1) {
         drawCube(gl, program, o, x, angle, viewProjMatrix); // Draw
-    }else{
-            drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber);   // Draw
-        }
+    }else if(cubeNumber == 2){
+        sliderBar2.addEventListener("change",drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber,(510-sliderBar2.value)));
+    }else if(cubeNumber ==3){
+        sliderBar3.addEventListener("change",drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber,(510-sliderBar3.value)));
+    }
 }
 
 
@@ -268,15 +273,14 @@ function drawCube(gl, program, o, x, angle, viewProjMatrix) {
 }
 
 
-
-function drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber) {
+function drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber,speed) {
     // Coordinate transformation matrix
     var g_modelMatrix = new Matrix4();
     var g_mvpMatrix = new Matrix4();
     var g_normalMatrix = new Matrix4();
 
-        var rotate_x = 5*Math.sin(Math.PI*angle/70);
-        var rotate_y = 5*Math.cos(Math.PI*angle/70);
+        var rotate_x = 5*Math.sin(Math.PI*angle/speed);
+        var rotate_y = 5*Math.cos(Math.PI*angle/speed);
 
     // Calculate a model matrix
     g_modelMatrix.setTranslate(rotate_x,rotate_y, (6.0 - cubeNumber*6));//-7.0cannot changed, change x and 1.0 for rotation
