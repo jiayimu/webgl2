@@ -29,6 +29,19 @@ var TEXTURE_FSHADER_SOURCE =
     '  gl_FragColor = vec4(color.rgb * v_NdotL, color.a);\n' +
     '}\n';
 
+//some variables
+var texture1;
+var texture2;
+var texture3;
+
+var angle = 0.0;
+var lx = 0.0;
+var lz = -1.0;
+var x = 0.0;
+var z = 15.0;
+var y = 0.0;
+var end = 0;
+
 function main() {
     // Retrieve <canvas> element
     var canvas = document.getElementById('webgl');
@@ -72,9 +85,9 @@ function main() {
 
     // Set texture
     //the last number display which cube is init
-    var texture1 = initTextures(gl, texProgram,1);
-    var texture2 = initTextures(gl, texProgram,2);
-    var texture3 = initTextures(gl, texProgram,3);
+    texture1 = initTextures(gl, texProgram,1);
+    texture2 = initTextures(gl, texProgram,2);
+    texture3 = initTextures(gl, texProgram,3);
     if (!texture1|| !texture2|| !texture3) {
         console.log('Failed to intialize the texture.');
         return;
@@ -87,9 +100,71 @@ function main() {
     // Calculate the view projection matrix
     var viewProjMatrix = new Matrix4();
     viewProjMatrix.setPerspective(30.0, canvas.width/canvas.height, 1.0, 100.0);
-    viewProjMatrix.lookAt(0.0, 0.0, 15.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    viewProjMatrix.lookAt(x,y,z, x+lx, 0.0, z+lz, 0.0, 1.0, 0.0);
+    //viewProjMatrix.lookAt(0.0,0.0,15.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
 
-    // Start drawing
+
+        document.onkeydown = function (ev) {
+
+            if (ev.keyCode == 35) {
+                end = 35;
+            }
+
+            if(end!=35) {
+                var fraction = 0.1;
+
+                switch (ev.keyCode) {
+                    case 39: //left key
+                        angle -= 0.01;
+                        lx = Math.sin(angle);
+                        lz = -Math.cos(angle);
+                        break;
+                    case 37: //right key
+                        angle += 0.01;
+                        lx = Math.sin(angle);
+                        lz = -Math.cos(angle);
+                        break;
+                    case 38: //down key
+                        x -= lx * fraction;
+                        z -= lz * fraction;
+                        break;
+                    case 40: //up key
+                        x += lx * fraction;
+                        z += lz * fraction;
+                        break;
+                    default:
+                        return;
+                }
+            }
+
+            // Calculate the view projection matrix
+            var viewProjMatrix = new Matrix4();
+            viewProjMatrix.setPerspective(30.0, canvas.width / canvas.height, 1.0, 100.0);
+            viewProjMatrix.lookAt(x, 0.0, z, x + lx, 0.0, z + lz, 0.0, 1.0, 0.0);
+
+            var currentAngle = 0.0; // Current rotation angle (degrees)
+            var tick = function () {
+                currentAngle = animate(currentAngle);  // Update current rotation angle
+
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // Clear color and depth buffers
+                // Draw a cube with texture
+                //the last number display which cube is init
+
+
+                drawTexCube(gl, texProgram, cube, texture3, 2.0, currentAngle, viewProjMatrix, 3);
+                drawTexCube(gl, texProgram, cube, texture2, 1.0, currentAngle, viewProjMatrix, 2);
+                drawTexCube(gl, texProgram, cube, texture1, 0.0, currentAngle, viewProjMatrix, 1);
+                window.requestAnimationFrame(tick, canvas);
+            };
+            tick();
+        }
+
+     //Start drawing
+    startDraw(gl,texProgram,cube,viewProjMatrix,canvas);
+}
+
+function startDraw(gl,texProgram,cube,viewProjMatrix,canvas){
+
     var currentAngle = 0.0; // Current rotation angle (degrees)
     var tick = function() {
         currentAngle = animate(currentAngle);  // Update current rotation angle
@@ -97,6 +172,8 @@ function main() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // Clear color and depth buffers
         // Draw a cube with texture
         //the last number display which cube is init
+
+
         drawTexCube(gl, texProgram, cube, texture3, 2.0, currentAngle, viewProjMatrix,3);
         drawTexCube(gl, texProgram, cube, texture2, 1.0, currentAngle, viewProjMatrix,2);
         drawTexCube(gl, texProgram, cube, texture1, 0.0, currentAngle, viewProjMatrix,1);
@@ -229,7 +306,7 @@ function drawTexCube(gl, program, o, texture, x, angle, viewProjMatrix,cubeNumbe
     if(cubeNumber == 1) {
         drawCube(gl, program, o, x, angle, viewProjMatrix); // Draw
     }else if(cubeNumber == 2){
-        sliderBar2.addEventListener("change",drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber,(510-sliderBar2.value)));
+        sliderBar2.addEventListener("change",drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber,(512-sliderBar2.value)));
     }else if(cubeNumber ==3){
         sliderBar3.addEventListener("change",drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber,(510-sliderBar3.value)));
     }
@@ -251,8 +328,8 @@ function drawCube(gl, program, o, x, angle, viewProjMatrix) {
 
     // Calculate a model matrix
     g_modelMatrix.setTranslate(x, 0.0, 0.0);
-    g_modelMatrix.rotate(20.0, 1.0, 0.0, 0.0);
-    g_modelMatrix.rotate(angle, 1, 1, 0.5);
+    //g_modelMatrix.rotate(20.0, 1.0, 0.0, 0.0);
+    g_modelMatrix.rotate(100, 1, 1, 0.5);
 
     // Calculate transformation matrix for normals and pass it to u_NormalMatrix
     g_normalMatrix.setInverseOf(g_modelMatrix);
@@ -262,6 +339,7 @@ function drawCube(gl, program, o, x, angle, viewProjMatrix) {
     // Calculate model view projection matrix and pass it to u_MvpMatrix
     g_mvpMatrix.set(viewProjMatrix);
     g_mvpMatrix.multiply(g_modelMatrix);
+
     gl.uniformMatrix4fv(program.u_MvpMatrix, false, g_mvpMatrix.elements);
 
     // Set the light direction (in the world coordinate)
@@ -279,11 +357,11 @@ function drawCubeAround(gl, program, o, x, angle, viewProjMatrix, cubeNumber,spe
     var g_mvpMatrix = new Matrix4();
     var g_normalMatrix = new Matrix4();
 
-        var rotate_x = 5*Math.sin(Math.PI*angle/speed);
-        var rotate_y = 5*Math.cos(Math.PI*angle/speed);
+    var rotate_x = 5*Math.sin(Math.PI*angle/speed);
+    var rotate_y = 5*Math.cos(Math.PI*angle/speed);
 
     // Calculate a model matrix
-    g_modelMatrix.setTranslate(rotate_x,rotate_y, (6.0 - cubeNumber*6));//-7.0cannot changed, change x and 1.0 for rotation
+    g_modelMatrix.setTranslate(rotate_x,rotate_y, (6.0 - cubeNumber*6));
     g_modelMatrix.rotate(20.0, 0.0, 0.0, 1.0);
     g_modelMatrix.rotate(angle, 1, 1, 1.5);
 
